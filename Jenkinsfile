@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         SCANNER_HOME = tool 'sonar-scanner' // UNCOMMENTED - Jenkins > Global Tool Configuration > SonarScanner name
-        SONARQUBE = 'Jenkins-sonar-server'  // Jenkins > Configure System > SonarQube server name
+        SONARQUBE = 'Jenkins-Sonar-Server'  // Jenkins > Configure System > SonarQube server name
     }
     
     stages {
