@@ -18,7 +18,7 @@ pipeline {
             steps {
                 echo 'Building the project...'
                 // Add your build commands here
-                // For Python: sh 'python3 setup.py build'
+                sh 'python3 setup.py build'
                 // For Node.js: sh 'npm install'
             }
         }
@@ -27,7 +27,7 @@ pipeline {
             steps {
                 echo 'Running tests...'
                 // Add your test commands here
-                // For Python: sh 'python3 -m pytest'
+                 sh 'python3 -m pytest'
                 // For Node.js: sh 'npm test'
             }
         }
@@ -39,7 +39,7 @@ pipeline {
                     sh '''
                         ${SCANNER_HOME}/bin/sonar-scanner \
                           -Dsonar.projectKey=my_project_key \
-                          -Dsonar.projectName="My Project" \
+                          -Dsonar.projectName="JanDevOps1" \
                           -Dsonar.sources=. \
                           -Dsonar.sourceEncoding=UTF-8
                     '''
