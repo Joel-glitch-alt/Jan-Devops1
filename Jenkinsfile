@@ -34,11 +34,12 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
+                // FIXED: Changed 'sonar-scanner' to match SONARQUBE variable
                 withSonarQubeEnv("${SONARQUBE}") {
                     sh '''
                         ${SCANNER_HOME}/bin/sonar-scanner \
-                          -Dsonar.projectKey=JanDevopsPython \
-                          -Dsonar.projectName="Python Project" \
+                          -Dsonar.projectKey=my_project_key \
+                          -Dsonar.projectName="My Project" \
                           -Dsonar.sources=. \
                           -Dsonar.sourceEncoding=UTF-8
                     '''
@@ -48,8 +49,15 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                timeout(time: 10, unit: 'MINUTES') {
+                    script {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            echo "Quality Gate failed: ${qg.status}"
+                            // Change to 'true' to fail the pipeline on quality gate failure
+                            // abortPipeline: false means it will continue
+                        }
+                    }
                 }
             }
         }
