@@ -18,7 +18,7 @@ pipeline {
             steps {
                 echo 'Building the project...'
                 // Add your build commands here
-                sh 'python3 setup.py build'
+                // For Python: sh 'python3 setup.py build'
                 // For Node.js: sh 'npm install'
             }
         }
@@ -27,7 +27,7 @@ pipeline {
             steps {
                 echo 'Running tests...'
                 // Add your test commands here
-                 sh 'python3 -m pytest'
+                // For Python: sh 'python3 -m pytest'
                 // For Node.js: sh 'npm test'
             }
         }
