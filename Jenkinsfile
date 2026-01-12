@@ -63,7 +63,7 @@ pipeline {
             steps {
                 script {
                     def img = docker.build("${DOCKER_IMAGE}")
-                    docker.withRegistry('https://index.docker.io/v1/', 'sonar-tokenJ') {
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
                         img.push()
                     }
                 }
