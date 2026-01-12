@@ -4,32 +4,21 @@ pipeline {
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
         SONARQUBE = 'Jenkins-Sonar-Server'
-        DOCKER_IMAGE = 'addition1905/jandevopstwo:latest'
+        DOCKER_IMAGE = 'addition1905/jandevopstwo'
+        DOCKER_TAG = "${env.BUILD_NUMBER}" // unique per build
     }
 
     stages {
-
         stage('Checkout') {
-            steps {
-                echo 'Checking out code from repository...'
-                checkout scm
-            }
+            steps { checkout scm }
         }
 
         stage('Build') {
-            steps {
-                echo 'Building the project...'
-                // sh 'npm install'
-                // sh 'python3 setup.py build'
-            }
+            steps { echo 'Building the project...' }
         }
 
         stage('Test') {
-            steps {
-                echo 'Running tests...'
-                // sh 'npm test'
-                // sh 'pytest'
-            }
+            steps { echo 'Running tests...' }
         }
 
         stage('SonarQube Analysis') {
@@ -46,23 +35,23 @@ pipeline {
             }
         }
 
-        // stage('Quality Gate') {
-        //     steps {
-        //         timeout(time: 10, unit: 'MINUTES') {
-        //             script {
-        //                 def qg = waitForQualityGate()
-        //                 if (qg.status != 'OK') {
-        //                     error "Quality Gate failed: ${qg.status}"
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    script {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            error "Quality Gate failed: ${qg.status}"
+                        }
+                    }
+                }
+            }
+        }
 
         stage('Docker Build & Push') {
             steps {
                 script {
-                    def img = docker.build("${DOCKER_IMAGE}")
+                    def img = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
                         img.push()
                     }
@@ -72,14 +61,8 @@ pipeline {
     }
 
     post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed. Check the logs for details.'
-        }
-        always {
-            echo 'Pipeline execution finished.'
-        }
+        success { echo 'Pipeline completed successfully!' }
+        failure { echo 'Pipeline failed. Check logs for details.' }
+        always { echo 'Pipeline execution finished.' }
     }
 }
