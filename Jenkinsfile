@@ -5,34 +5,33 @@ pipeline {
         SCANNER_HOME = tool 'sonar-scanner'
         SONARQUBE = 'Jenkins-Sonar-Server'
         DOCKER_IMAGE = 'addition1905/jandevopstwo'
-        DOCKER_TAG = "${env.BUILD_NUMBER}" // unique per build
+        DOCKER_TAG = "${env.BUILD_NUMBER}"
     }
 
     stages {
+
         stage('Checkout') {
-            steps { checkout scm }
+            steps {
+                checkout scm
+            }
         }
 
         stage('Build') {
-            steps { echo 'Building the project...' }
+            steps {
+                echo 'Building the project...'
+            }
         }
 
-        // stage('Test') {
-        //     steps { echo 'Running tests...' }
-        // }
-
         stage('Test') {
-    steps {
-        sh '''
-        pip install -r requirements.txt
-        pytest --cov=. --cov-report=xml
-        '''
-    }
-}
-
-
-
-        //
+            steps {
+                sh '''
+                python3 -m venv venv
+                venv/bin/pip install --upgrade pip
+                venv/bin/pip install -r requirements.txt
+                venv/bin/pytest --cov=. --cov-report=xml
+                '''
+            }
+        }
 
         stage('SonarQube Analysis') {
             steps {
@@ -42,6 +41,7 @@ pipeline {
                           -Dsonar.projectKey=jan_devops_key \
                           -Dsonar.projectName=JanDevOps1 \
                           -Dsonar.sources=. \
+                          -Dsonar.python.coverage.reportPaths=coverage.xml \
                           -Dsonar.sourceEncoding=UTF-8
                     """
                 }
@@ -65,7 +65,10 @@ pipeline {
             steps {
                 script {
                     def img = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                    docker.withRegistry(
+                        'https://index.docker.io/v1/',
+                        'docker-hub-credentials'
+                    ) {
                         img.push()
                     }
                 }
@@ -74,8 +77,14 @@ pipeline {
     }
 
     post {
-        success { echo 'Pipeline completed successfully!' }
-        failure { echo 'Pipeline failed. Check logs for details.' }
-        always { echo 'Pipeline execution finished.' }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Check logs for details.'
+        }
+        always {
+            echo 'Pipeline execution finished.'
+        }
     }
 }
