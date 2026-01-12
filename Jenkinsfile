@@ -17,9 +17,22 @@ pipeline {
             steps { echo 'Building the project...' }
         }
 
+        // stage('Test') {
+        //     steps { echo 'Running tests...' }
+        // }
+
         stage('Test') {
-            steps { echo 'Running tests...' }
-        }
+    steps {
+        sh '''
+        pip install -r requirements.txt
+        pytest --cov=. --cov-report=xml
+        '''
+    }
+}
+
+
+
+        //
 
         stage('SonarQube Analysis') {
             steps {
