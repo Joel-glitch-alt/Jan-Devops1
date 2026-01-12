@@ -1,48 +1,47 @@
 pipeline {
     agent any
-    
+
     environment {
-        SCANNER_HOME = tool 'sonar-scanner' // UNCOMMENTED - Jenkins > Global Tool Configuration > SonarScanner name
-        SONARQUBE = 'Jenkins-Sonar-Server'  // Jenkins > Configure System > SonarQube server name
+        SCANNER_HOME = tool 'sonar-scanner'
+        SONARQUBE = 'Jenkins-Sonar-Server'
+        DOCKER_IMAGE = 'addition1905/jandevopstwo:latest'
     }
-    
+
     stages {
+
         stage('Checkout') {
             steps {
                 echo 'Checking out code from repository...'
                 checkout scm
             }
         }
-        
+
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                // Add your build commands here
-                // For Python: sh 'python3 setup.py build'
-                // For Node.js: sh 'npm install'
+                // sh 'npm install'
+                // sh 'python3 setup.py build'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                // Add your test commands here
-                // For Python: sh 'python3 -m pytest'
-                // For Node.js: sh 'npm test'
+                // sh 'npm test'
+                // sh 'pytest'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                // FIXED: Changed 'sonar-scanner' to match SONARQUBE variable
                 withSonarQubeEnv("${SONARQUBE}") {
-                    sh '''
+                    sh """
                         ${SCANNER_HOME}/bin/sonar-scanner \
-                          -Dsonar.projectKey=my_project_key \
-                          -Dsonar.projectName="JanDevOps1" \
+                          -Dsonar.projectKey=jan_devops_key \
+                          -Dsonar.projectName=JanDevOps1 \
                           -Dsonar.sources=. \
                           -Dsonar.sourceEncoding=UTF-8
-                    '''
+                    """
                 }
             }
         }
@@ -53,16 +52,25 @@ pipeline {
                     script {
                         def qg = waitForQualityGate()
                         if (qg.status != 'OK') {
-                            echo "Quality Gate failed: ${qg.status}"
-                            // Change to 'true' to fail the pipeline on quality gate failure
-                            // abortPipeline: false means it will continue
+                            error "Quality Gate failed: ${qg.status}"
                         }
                     }
                 }
             }
         }
+
+        stage('Docker Build & Push') {
+            steps {
+                script {
+                    def img = docker.build("${DOCKER_IMAGE}")
+                    docker.withRegistry('https://index.docker.io/v1/', 'sonar-tokenJ') {
+                        img.push()
+                    }
+                }
+            }
+        }
     }
-    
+
     post {
         success {
             echo 'Pipeline completed successfully!'
