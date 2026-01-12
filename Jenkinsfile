@@ -17,16 +17,14 @@ pipeline {
             steps { echo 'Building the project...' }
         }
 
-        // stage('Test') {
-        //     steps { echo 'Running tests...' }
-        // }
+        stage('Test') {
+            steps { echo 'Running tests...' }
+        }
 
-   stage('Test') {
+        //
+        stage('Test') {
     steps {
         sh '''
-        python3 -m venv venv
-        . venv/bin/activate
-        pip install --upgrade pip
         pip install -r requirements.txt
         pytest --cov=. --cov-report=xml
         '''
@@ -51,18 +49,18 @@ pipeline {
             }
         }
 
-        // stage('Quality Gate') {
-        //     steps {
-        //         timeout(time: 10, unit: 'MINUTES') {
-        //             script {
-        //                 def qg = waitForQualityGate()
-        //                 if (qg.status != 'OK') {
-        //                     error "Quality Gate failed: ${qg.status}"
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    script {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK') {
+                            error "Quality Gate failed: ${qg.status}"
+                        }
+                    }
+                }
+            }
+        }
 
         stage('Docker Build & Push') {
             steps {
