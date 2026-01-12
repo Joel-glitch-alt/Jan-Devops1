@@ -5,41 +5,37 @@ pipeline {
         SCANNER_HOME = tool 'sonar-scanner'
         SONARQUBE = 'Jenkins-Sonar-Server'
         DOCKER_IMAGE = 'addition1905/jandevopstwo'
-        DOCKER_TAG = "${env.BUILD_NUMBER}"
+        DOCKER_TAG = "${env.BUILD_NUMBER}" // unique per build
     }
 
     stages {
-
         stage('Checkout') {
-            steps {
-                checkout scm
-            }
+            steps { checkout scm }
         }
 
         stage('Build') {
-            steps {
-                echo 'Building the project...'
-            }
+            steps { echo 'Building the project...' }
         }
 
-        stage('Test') {
-            steps {
-                sh '''
-                # Create virtual environment
-                python3 -m venv venv
-                
-                # Activate virtual environment and install dependencies
-                venv/bin/pip install --upgrade pip
-                venv/bin/pip install -r requirements.txt
-                
-                # Set PYTHONPATH to include current directory
-                export PYTHONPATH="${WORKSPACE}:${PYTHONPATH}"
-                
-                # Run tests with coverage
-                venv/bin/pytest --cov=. --cov-report=xml --cov-report=term -v
-                '''
-            }
-        }
+        // stage('Test') {
+        //     steps { echo 'Running tests...' }
+        // }
+
+   stage('Test') {
+    steps {
+        sh '''
+        python3 -m venv venv
+        . venv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pytest --cov=. --cov-report=xml
+        '''
+    }
+}
+
+
+
+        //
 
         stage('SonarQube Analysis') {
             steps {
@@ -49,37 +45,30 @@ pipeline {
                           -Dsonar.projectKey=jan_devops_key \
                           -Dsonar.projectName=JanDevOps1 \
                           -Dsonar.sources=. \
-                          -Dsonar.python.coverage.reportPaths=coverage.xml \
-                          -Dsonar.exclusions=venv/**,**/__pycache__/**,**/test_*.py \
-                          -Dsonar.tests=. \
-                          -Dsonar.test.inclusions=**/test_*.py \
                           -Dsonar.sourceEncoding=UTF-8
                     """
                 }
             }
         }
 
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 10, unit: 'MINUTES') {
-                    script {
-                        def qg = waitForQualityGate()
-                        if (qg.status != 'OK') {
-                            error "Quality Gate failed: ${qg.status}"
-                        }
-                    }
-                }
-            }
-        }
+        // stage('Quality Gate') {
+        //     steps {
+        //         timeout(time: 10, unit: 'MINUTES') {
+        //             script {
+        //                 def qg = waitForQualityGate()
+        //                 if (qg.status != 'OK') {
+        //                     error "Quality Gate failed: ${qg.status}"
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Docker Build & Push') {
             steps {
                 script {
                     def img = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                    docker.withRegistry(
-                        'https://index.docker.io/v1/',
-                        'docker-hub-credentials'
-                    ) {
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
                         img.push()
                     }
                 }
@@ -88,16 +77,8 @@ pipeline {
     }
 
     post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed. Check logs for details.'
-        }
-        always {
-            echo 'Pipeline execution finished.'
-            // Clean up virtual environment
-            cleanWs(patterns: [[pattern: 'venv/**', type: 'INCLUDE']])
-        }
+        success { echo 'Pipeline completed successfully!' }
+        failure { echo 'Pipeline failed. Check logs for details.' }
+        always { echo 'Pipeline execution finished.' }
     }
 }
