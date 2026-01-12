@@ -25,10 +25,18 @@ pipeline {
         stage('Test') {
             steps {
                 sh '''
+                # Create virtual environment
                 python3 -m venv venv
+                
+                # Activate virtual environment and install dependencies
                 venv/bin/pip install --upgrade pip
                 venv/bin/pip install -r requirements.txt
-                venv/bin/pytest --cov=. --cov-report=xml
+                
+                # Set PYTHONPATH to include current directory
+                export PYTHONPATH="${WORKSPACE}:${PYTHONPATH}"
+                
+                # Run tests with coverage
+                venv/bin/pytest --cov=. --cov-report=xml --cov-report=term -v
                 '''
             }
         }
@@ -42,6 +50,9 @@ pipeline {
                           -Dsonar.projectName=JanDevOps1 \
                           -Dsonar.sources=. \
                           -Dsonar.python.coverage.reportPaths=coverage.xml \
+                          -Dsonar.exclusions=venv/**,**/__pycache__/**,**/test_*.py \
+                          -Dsonar.tests=. \
+                          -Dsonar.test.inclusions=**/test_*.py \
                           -Dsonar.sourceEncoding=UTF-8
                     """
                 }
@@ -85,6 +96,8 @@ pipeline {
         }
         always {
             echo 'Pipeline execution finished.'
+            // Clean up virtual environment
+            cleanWs(patterns: [[pattern: 'venv/**', type: 'INCLUDE']])
         }
     }
 }
