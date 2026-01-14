@@ -1,0 +1,5 @@
+# For running tests
+pytest
+
+# For generating test coverage reports
+pytest-cov
