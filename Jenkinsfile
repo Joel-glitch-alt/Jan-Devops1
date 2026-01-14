@@ -50,23 +50,15 @@ pipeline {
         echo 'Running tests...'
         sh '''
         #!/bin/bash
-        # create a virtual environment
         python3 -m venv venv
-
-        # activate the virtual environment
         source venv/bin/activate
-
-        # upgrade pip
         pip install --upgrade pip
-
-        # install dependencies
         pip install -r requirements.txt
-
-        # run tests
         pytest --cov=. --cov-report=xml
         '''
     }
 }
+
 
 
         stage('SonarQube Analysis') {
