@@ -22,27 +22,52 @@ pipeline {
             }
         }
 
+        // stage('Test') {
+        //     steps {
+        //         echo 'Running tests...'
+        //         sh '''
+        //         # create a virtual environment
+        //         python3 -m venv venv
+
+        //         # activate the virtual environment
+        //         source venv/bin/activate
+
+        //         # upgrade pip
+        //         pip install --upgrade pip
+
+        //         # install dependencies
+        //         pip install -r requirements.txt
+
+        //         # run tests
+        //         pytest --cov=. --cov-report=xml
+        //         '''
+        //     }
+        // }
+
+
         stage('Test') {
-            steps {
-                echo 'Running tests...'
-                sh '''
-                # create a virtual environment
-                python3 -m venv venv
+    steps {
+        echo 'Running tests...'
+        sh '''
+        #!/bin/bash
+        # create a virtual environment
+        python3 -m venv venv
 
-                # activate the virtual environment
-                source venv/bin/activate
+        # activate the virtual environment
+        source venv/bin/activate
 
-                # upgrade pip
-                pip install --upgrade pip
+        # upgrade pip
+        pip install --upgrade pip
 
-                # install dependencies
-                pip install -r requirements.txt
+        # install dependencies
+        pip install -r requirements.txt
 
-                # run tests
-                pytest --cov=. --cov-report=xml
-                '''
-            }
-        }
+        # run tests
+        pytest --cov=. --cov-report=xml
+        '''
+    }
+}
+
 
         stage('SonarQube Analysis') {
             steps {
