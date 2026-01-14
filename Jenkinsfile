@@ -26,7 +26,19 @@ pipeline {
             steps {
                 echo 'Running tests...'
                 sh '''
+                # create a virtual environment
+                python3 -m venv venv
+
+                # activate the virtual environment
+                source venv/bin/activate
+
+                # upgrade pip
+                pip install --upgrade pip
+
+                # install dependencies
                 pip install -r requirements.txt
+
+                # run tests
                 pytest --cov=. --cov-report=xml
                 '''
             }
@@ -46,19 +58,6 @@ pipeline {
                 }
             }
         }
-
-        // stage('Quality Gate') {
-        //     steps {
-        //         timeout(time: 10, unit: 'MINUTES') {
-        //             script {
-        //                 def qg = waitForQualityGate()
-        //                 if (qg.status != 'OK') {
-        //                     error "Quality Gate failed: ${qg.status}"
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
 
         stage('Docker Build & Push') {
             steps {
