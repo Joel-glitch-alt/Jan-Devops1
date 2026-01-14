@@ -75,6 +75,15 @@ pipeline {
             }
         }
 
+        // NEW: Wait for Quality Gate
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') { // optional timeout
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
         stage('Docker Build & Push') {
             steps {
                 script {
