@@ -1,4 +1,4 @@
-from app import generate_id, analyze_image
+from main import generate_id, analyze_image
 
 
 def test_generate_id_length():
