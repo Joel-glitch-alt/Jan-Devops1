@@ -45,19 +45,18 @@ pipeline {
         // }
 
 
-        stage('Test') {
+      stage('Test') {
     steps {
         echo 'Running tests...'
         sh '''
-        #!/bin/bash
         python3 -m venv venv
-        source venv/bin/activate
-        pip install --upgrade pip
-        pip install -r requirements.txt
-        pytest --cov=. --cov-report=xml
+        venv/bin/pip install --upgrade pip
+        venv/bin/pip install -r requirements.txt
+        venv/bin/pytest --cov=. --cov-report=xml
         '''
     }
 }
+
 
 
 
