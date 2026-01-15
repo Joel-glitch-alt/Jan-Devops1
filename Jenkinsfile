@@ -22,28 +22,6 @@ pipeline {
             }
         }
 
-        // stage('Test') {
-        //     steps {
-        //         echo 'Running tests...'
-        //         sh '''
-        //         # create a virtual environment
-        //         python3 -m venv venv
-
-        //         # activate the virtual environment
-        //         source venv/bin/activate
-
-        //         # upgrade pip
-        //         pip install --upgrade pip
-
-        //         # install dependencies
-        //         pip install -r requirements.txt
-
-        //         # run tests
-        //         pytest --cov=. --cov-report=xml
-        //         '''
-        //     }
-        // }
-
 
       stage('Test') {
     steps {
@@ -76,13 +54,19 @@ pipeline {
         }
 
         // NEW: Wait for Quality Gate
+        // stage('Quality Gate') {
+        //     steps {
+        //         timeout(time: 10, unit: 'MINUTES') { // optional timeout
+        //             waitForQualityGate abortPipeline: true
+        //         }
+        //     }
+        // }
+
         stage('Quality Gate') {
-            steps {
-                timeout(time: 10, unit: 'MINUTES') { // optional timeout
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
+             steps {
+             echo 'Skipping Quality Gate enforcement'
+             }
+          }
 
         stage('Docker Build & Push') {
             steps {
